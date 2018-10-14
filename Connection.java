@@ -65,36 +65,41 @@ public class Connection
       Reset the connection to the initial state and prompt
       for mailbox number
    */
-   public int selectFirstMenu() {
-	   Scanner input = new Scanner(System.in);
-	   String key = "";
-	   phone.speak("To leave a message, press (1), to access your mailbox, press (2)");
-	   
-	   key = input.nextLine();
-	   
-	   if (key.equals("1")) {
-		   key = "";
-		   return 1;
-	   }
-	   else if (key.equals("2")) {
-		   key = "";
-		   return 2;
-	   }
-	   else if (!key.equals("1") && !key.equals("2")) {
-		   key = "";
-		   selectFirstMenu();
-	   }
-	   key = "";
-	   return 0;
-   }
-   void resetConnection()
+	public int selectFirstMenu() {
+		Scanner input = new Scanner(System.in);
+		int key = 0;
+		phone.speak("To leave a message, press (1), to access your mailbox, press (2)");
+		while (input.hasNext()) {
+			if (input.hasNextInt() ) {
+				key = input.nextInt();
+				break;
+			} else {
+				input.next();
+				phone.speak("To leave a message, press (1), to access your mailbox, press (2)");
+			}
+		}
+		if (key == 1) {
+			key = 0;
+			return 1;
+		} else if (key == 2) {
+			key = 0;
+			return 2;
+		} else if (key != 1 && key != 2) {
+			key = 0;
+			selectFirstMenu();
+		}
+		key = 0;
+		return 0;
+
+	}
+
+	void resetConnection()
    {
       currentRecording = "";
       accumulatedKeys = "";
       int choice = selectFirstMenu();
       if (choice == 1) {
-      state = CONNECTED;
-      phone.speak(INITIAL_PROMPT);
+      connect("hello");
       }
       else if (choice == 2) {
     	  state = MAILBOX_MENU;
@@ -114,23 +119,30 @@ public class Connection
       Try to connect the user with the specified mailbox.
       @param key the phone key pressed by the user
    */
-   private void connect(String key)
-   {
-      if (key.equals("#"))
-      {
-         currentMailbox = system.findMailbox(accumulatedKeys);
-         if (currentMailbox != null)
-         {
-            state = RECORDING;
-            phone.speak(currentMailbox.getGreeting());
-         }
-         else
-            phone.speak("Incorrect mailbox number. Try again!");
-         accumulatedKeys = "";
-      }
-      else
-         accumulatedKeys += key;
-   }
+	   private void connect(String keys)
+	   {
+			Scanner input = new Scanner(System.in);
+			int key = 0;
+			phone.speak("Enter mailbox number");
+			while (input.hasNext()) {
+				if (input.hasNextInt() ) {
+					key = input.nextInt();
+					break;
+				} else {
+					input.next();
+					phone.speak("Invalid Mailbox number, please enter a valid mailbox number: ");
+				}
+			}
+			currentMailbox = system.findMailbox(String.valueOf(key));
+	         if (currentMailbox != null)
+	         {
+	            state = RECORDING;
+	            phone.speak(currentMailbox.getGreeting());
+	         }
+	         else
+	            phone.speak("Incorrect mailbox number. Try again!");
+	      }
+	   
 
    /**
       Try to log in the user.
